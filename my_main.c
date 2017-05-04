@@ -53,12 +53,15 @@ void my_main() {
 
   int i;
   struct matrix *tmp;
+  struct matrix *transform;
   struct stack *s;
   screen t;
   color g;
+  double step = 0.1;
+  
   g.red = 255;
   g.green = 255;
-  c.blue = 255;
+  g.blue = 255;
   
   s = new_stack();
   tmp = new_matrix(4, 1000);
@@ -76,15 +79,66 @@ void my_main() {
       add_box(tmp, op[i].op.box.d0[0], op[i].op.box.d0[1], op[i].op.box.d0[2],
 	      op[i].op.box.d1[0], op[i].op.box.d1[1], op[i].op.box.d1[2]);
       matrix_mult(peek(s), tmp);
-      draw_polygons(tmp, s, c);
-      edges->lastcol = 0;
+      draw_polygons(tmp, t, g);
+      tmp->lastcol = 0;
       break;
     case SPHERE:
-      add_sphere(tmp, op[i].op.sphere.d[0], op[i].op.sphere.d[1], op[i].op.sphere.d[2], op[i].op.sphere.r);
+      add_sphere(tmp, op[i].op.sphere.d[0], op[i].op.sphere.d[1], op[i].op.sphere.d[2], op[i].op.sphere.r, step);
       matrix_mult(peek(s), tmp);
-      draw_polygons(tmp, s, c);
-      edges->lastcol = 0;
+      draw_polygons(tmp, t, g);
+      tmp->lastcol = 0;
       break;
+    case TORUS:
+      add_torus(tmp, op[i].op.torus.d[0], op[i].op.torus.d[1], op[i].op.torus.d[2], op[i].op.torus.r0, op[i].op.torus.r1, step);
+      matrix_mult(peek(s), tmp);
+      draw_polygons(tmp, t, g);
+      tmp->lastcol = 0;
+      break;
+    case MOVE:
+      transform = make_translate(op[i].op.move.d[0], op[i].op.move.d[1], op[i].op.move.d[2]);
+      matrix_mult(peek(s), transform);
+      copy_matrix(transform, peek(s));
+      free_matrix(transform);
+      break;
+    case ROTATE:
+      switch ((int) (op[i].op.rotate.axis)) {
+      case 0: // x axis
+	transform = make_rotX(op[i].op.rotate.degrees);
+	break;
+      case 1: // y axis
+	transform = make_rotY(op[i].op.rotate.degrees);
+	break;
+      case 2: // z axis
+	transform = make_rotZ(op[i].op.rotate.degrees);
+	break;
+      default:
+	transform = make_rotZ(op[i].op.rotate.degrees);
+	break;
+      }
+      matrix_mult(peek(s), transform);
+      copy_matrix(transform, peek(s));
+      free_matrix(transform);
+      break;
+    case SCALE:
+      transform = make_scale(op[i].op.scale.d[0], op[i].op.scale.d[1], op[i].op.scale.d[2]);
+      matrix_mult(peek(s), transform);
+      copy_matrix(transform, peek(s));
+      free_matrix(transform);
+      break;
+    case LINE:
+      add_edge(tmp, op[i].op.line.p0[0], op[i].op.line.p0[1], op[i].op.line.p0[2],
+	       op[i].op.line.p1[0], op[i].op.line.p1[1], op[i].op.line.p1[2]);
+      matrix_mult(peek(s), tmp);
+      draw_lines(tmp, t, g);
+      tmp->lastcol = 0;
+      break;
+    case SAVE:
+      save_extension(t, op[i].op.save.p->name);
+      break;
+    case DISPLAY:
+      display(t);
+      break;
+      
     }
   }
 }
