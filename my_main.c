@@ -59,9 +59,9 @@ void my_main() {
   color g;
   double step = 0.1;
   
-  g.red = 255;
-  g.green = 255;
-  g.blue = 255;
+  g.red = 0;
+  g.green = 0;
+  g.blue = 0;
   
   s = new_stack();
   tmp = new_matrix(4, 1000);
@@ -103,16 +103,16 @@ void my_main() {
     case ROTATE:
       switch ((int) (op[i].op.rotate.axis)) {
       case 0: // x axis
-	transform = make_rotX(op[i].op.rotate.degrees);
+	transform = make_rotX(op[i].op.rotate.degrees * (M_PI/180));
 	break;
       case 1: // y axis
-	transform = make_rotY(op[i].op.rotate.degrees);
+	transform = make_rotY(op[i].op.rotate.degrees * (M_PI/180));
 	break;
       case 2: // z axis
-	transform = make_rotZ(op[i].op.rotate.degrees);
+	transform = make_rotZ(op[i].op.rotate.degrees * (M_PI/180));
 	break;
       default:
-	transform = make_rotZ(op[i].op.rotate.degrees);
+	transform = make_rotZ(op[i].op.rotate.degrees * (M_PI/180));
 	break;
       }
       matrix_mult(peek(s), transform);
